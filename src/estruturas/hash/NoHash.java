@@ -1,15 +1,13 @@
 package estruturas.hash;
 
-import estruturas.listaLigada.NoLista;
-
-public class NoHash {
+public class NoHash<T> {
     private int chave;
-    private NoLista referenciaLista;
-    private NoHash proxNo;
+    private T referencia;
+    private NoHash<T> proxNo;
 
-    public NoHash(int chave, NoLista referenciaLista) {
+    public NoHash(int chave, T referencia) {
         this.chave = chave;
-        this.referenciaLista = referenciaLista;
+        this.referencia = referencia;
         this.proxNo = null;
     }
 
@@ -21,19 +19,19 @@ public class NoHash {
         this.chave = chave;
     }
 
-    public NoLista getReferenciaLista() {
-        return referenciaLista;
+    public T getReferencia() {
+        return referencia;
     }
 
-    public void setReferenciaLista(NoLista referenciaLista) {
-        this.referenciaLista = referenciaLista;
+    public void setReferencia(T referencia) {
+        this.referencia = referencia;
     }
 
-    public NoHash getProxNo() {
+    public NoHash<T> getProxNo() {
         return proxNo;
     }
 
-    public void setProxNo(NoHash proxNo) {
+    public void setProxNo(NoHash<T> proxNo) {
         this.proxNo = proxNo;
     }
 }
