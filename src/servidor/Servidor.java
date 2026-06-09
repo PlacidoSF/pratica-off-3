@@ -5,15 +5,18 @@ import java.util.List;
 
 import estruturas.listaLigada.*;
 import estruturas.hash.*;
+import estruturas.arvoreSplay.ArvoreSplay;
 import model.Filme;
 
 public class Servidor {
     private ListaLigada dados;
-    private TabelaHash index;
+    private TabelaHash<NoLista> index;
+    private ArvoreSplay popularidadeGlobal;
 
     public Servidor() {
         this.dados = new ListaLigada();
-        this.index = new TabelaHash();
+        this.index = new TabelaHash<>(173);
+        this.popularidadeGlobal = new ArvoreSplay();
     }
 
     public void cadastrarFilme(Filme filmeValor) {
@@ -24,7 +27,11 @@ public class Servidor {
     public Filme buscarComIndice(int id) {
         NoLista resultado = this.index.buscar(id);
         if (resultado != null) {
-            return resultado.getValorFilme();
+            Filme filmeEncontrado = resultado.getValorFilme();
+            
+            this.popularidadeGlobal.inserir(filmeEncontrado);
+            
+            return filmeEncontrado;
         }
         return null;
     }
@@ -32,9 +39,17 @@ public class Servidor {
     public Filme buscarSemIndice(int id) {
         NoLista resultado = this.dados.buscar(id);
         if (resultado != null) {
-            return resultado.getValorFilme();
+            Filme filmeEncontrado = resultado.getValorFilme();
+            
+            this.popularidadeGlobal.inserir(filmeEncontrado);
+            
+            return filmeEncontrado;
         }
         return null;
+    }
+
+    public void exibirPopularidadeGlobal() {
+        this.popularidadeGlobal.exibirMaisPopulares();
     }
 
     public int getComparacoesIndex() {
