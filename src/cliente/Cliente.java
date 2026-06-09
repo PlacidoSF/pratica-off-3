@@ -2,15 +2,15 @@ package cliente;
 
 import estruturas.hash.TabelaHash;
 import estruturas.listaAutoajustavel.*;
-import estruturas.arvoreSplay.*;
+import estruturas.arvoreSplay.ArvoreSplay;
 import model.Filme;
 import servidor.Servidor;
 
 public class Cliente {
     private String nomeUsuario;
+    private String senha;
     private Servidor servidor;
     
-    // Estruturas do Cliente
     private TabelaHash<NoAutoAjustavel> cacheHash;
     private ListaAutoAjustavel cacheLRU;
     private ArvoreSplay preferencias;
@@ -18,8 +18,9 @@ public class Cliente {
     private static final int LIMITE_CACHE = 50;
     private int tamanhoAtual = 0;
 
-    public Cliente(String nomeUsuario, Servidor servidor) {
+    public Cliente(String nomeUsuario, String senha, Servidor servidor) {
         this.nomeUsuario = nomeUsuario;
+        this.senha = senha;
         this.servidor = servidor;
         
         this.cacheHash = new TabelaHash<>(LIMITE_CACHE);
@@ -27,12 +28,19 @@ public class Cliente {
         this.preferencias = new ArvoreSplay();
     }
 
+    public String getNomeUsuario() {
+        return nomeUsuario;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
     public void solicitarFilme(int id) {
         System.out.println("===================================================");
         System.out.println("[BUSCA SOLICITADA] ID: " + id + " | Usuário: " + nomeUsuario);
         System.out.println("---------------------------------------------------");
 
-        
         NoAutoAjustavel noCache = cacheHash.buscar(id);
 
         if (noCache != null) {
@@ -42,7 +50,6 @@ public class Cliente {
             System.out.println("> Comparações na Hash: " + cacheHash.getComparacoesBusca());
             System.out.println("---------------------------------------------------");
             System.out.println(filme);
-
             
             cacheLRU.buscarMF(id);
 
@@ -64,8 +71,6 @@ public class Cliente {
             System.out.println("---------------------------------------------------");
 
         }
-            
-            
     }
 
     public void atualizarCache(Filme filme) {
