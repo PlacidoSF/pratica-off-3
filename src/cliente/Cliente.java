@@ -44,7 +44,7 @@ public class Cliente {
         NoAutoAjustavel noCache = cacheHash.buscar(id);
 
         if (noCache != null) {
-        
+
             Filme filme = noCache.getFilme();
             System.out.println("[HIT] Filme encontrado no Cache Local (Tabela Hash).");
             System.out.println("> Comparações na Hash: " + cacheHash.getComparacoesBusca());
@@ -52,23 +52,20 @@ public class Cliente {
             System.out.println(filme);
             
             cacheLRU.buscarMF(id);
-
             preferencias.inserir(filme);
 
-            Filme recomendacao = preferencias.recomendarPorCategoria(filme.getCategoria(), filme.getId());
             
-            if (recomendacao != null) {
-                System.out.println("---------------------------------------------------");
-                System.out.println("[RECOMENDAÇÃO PARA VOCÊ]");
-                System.out.println("Porque você assistiu a filmes de " + filme.getCategoria() + ":");
-                System.out.println("> " + recomendacao.getNome() + " (ID: " + recomendacao.getId() + ")");
-            }
+            String recomendacoesServidor = servidor.recomendarPorGenero(filme.getCategoria());
+            filtrarEExibirRecomendacao(recomendacoesServidor, filme.getCategoria(), false);
 
         } else {
     
             System.out.println("[MISS] Filme não encontrado no Cache Local.");
             System.out.println("[REDE] Preparando requisição ao servidor (Aguardando Huffman)...");
             System.out.println("---------------------------------------------------");
+            
+            String resposta = servidor.atenderMiss(id);
+            processarRespostaMiss(resposta);
 
         }
     }
@@ -102,5 +99,79 @@ public class Cliente {
 
     public ArvoreSplay getPreferencias() {
         return preferencias;
+    }
+
+    private void filtrarEExibirRecomendacao(String recomendacoes, String categoria, boolean isGlobal) {
+        if (recomendacoes.equals("REC: VAZIO")) {
+            return;
+        }
+
+        String stringLimpa = recomendacoes.replace("REC: ", "").trim();
+        String[] opcoes = stringLimpa.split(";");
+
+        boolean recomendou = false;
+        int limiteTentativas = 3;
+        int tentativas = 0;
+
+        if (isGlobal) {
+            System.out.println("\n[TENDÊNCIA GLOBAL DA PLATAFORMA]");
+            System.out.println("Títulos em alta no gênero " + categoria.toUpperCase() + ":");
+        } else {
+            System.out.println("\n[RECOMENDAÇÃO CONTEXTUAL]");
+            System.out.println("Porque você acabou de buscar por " + categoria.toUpperCase() + ":");
+        }
+
+        for (String opcao : opcoes) {
+            if (tentativas >= limiteTentativas) break;
+
+            String[] dados = opcao.trim().split(",");
+            int idSorteado = Integer.parseInt(dados[0]);
+            String nomeSorteado = dados[1];
+
+            if (cacheHash.buscar(idSorteado) == null) {
+                System.out.println("> " + nomeSorteado + " (ID: " + idSorteado + ")");
+                recomendou = true;
+                break;
+            }
+            tentativas++;
+        }
+
+        if (!recomendou) {
+            System.out.println("> Você já assistiu aos títulos mais recentes desta tendência!");
+        }
+    }
+
+    public void processarRespostaMiss(String respostaServidor) {
+        if (respostaServidor.equals("ERRO:FILME_NAO_ENCONTRADO")) {
+            System.out.println("Erro: O filme solicitado não existe no catálogo.");
+            return;
+        }
+
+        String[] partes = respostaServidor.split("\\|");
+        String dadosFilmeStr = partes[0];
+        String generoGlobal = partes[1];
+        String recomendacoesGlobais = partes[2];
+        String recomendacoesLocais = partes.length > 3 ? partes[3] : "REC: VAZIO";
+
+        String[] atributos = dadosFilmeStr.split(";");
+        Filme filme = new Filme(Integer.parseInt(atributos[0]), atributos[1], Integer.parseInt(atributos[2]), 
+            atributos[3],  // sinopse
+            atributos[4]   // categoria
+        );
+
+        System.out.println("[SUCESSO] Filme recebido do servidor!");
+        System.out.println(filme);
+        
+        atualizarCache(filme);
+
+        System.out.println("---------------------------------------------------");
+        System.out.println("                 SUGESTÕES DE FILMES               ");
+        System.out.println("---------------------------------------------------");
+
+        filtrarEExibirRecomendacao(recomendacoesLocais, filme.getCategoria(), false);
+
+        filtrarEExibirRecomendacao(recomendacoesGlobais, generoGlobal, true);
+        
+        System.out.println("===================================================");
     }
 }
