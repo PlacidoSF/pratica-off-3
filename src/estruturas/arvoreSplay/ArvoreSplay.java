@@ -121,27 +121,6 @@ public class ArvoreSplay {
         }
     }
 
-    public Filme recomendarPorCategoria(String categoria, int idFilmeAtual) {
-        if (raiz == null) {
-            return null;
-        }
-
-        Queue<NoSplay> fila = new LinkedList<>();
-        fila.add(raiz);
-
-        while (!fila.isEmpty()) {
-            NoSplay atual = fila.remove();
-
-            if (atual.filme.getCategoria().equalsIgnoreCase(categoria) && atual.chave != idFilmeAtual) {
-                return atual.filme;
-            }
-
-            if (atual.esq != null) fila.add(atual.esq);
-            if (atual.dir != null) fila.add(atual.dir);
-        }
-        return null;
-    }
-
     public void exibirMaisPopulares() {
         if (raiz == null) {
             System.out.println("Nenhum conteúdo foi acessado globalmente até o momento.");
@@ -152,18 +131,18 @@ public class ArvoreSplay {
         fila.add(raiz);
         int cont = 0;
 
-        System.out.println("===============================================================");
+        System.out.println("============================================================================");
         System.out.println("       CONTEÚDOS MAIS POPULARES GLOBALMENTE (ÁRVORE SPLAY)     ");
-        System.out.println("===============================================================");
-        System.out.printf("%-5s | %-35s | %-15s | %s\n", "POS", "NOME", "CATEGORIA", "ACESSOS");
-        System.out.println("---------------------------------------------------------------");
+        System.out.println("============================================================================");
+        System.out.printf("%-5s | %-35s | %-20s | %s\n", "POS", "NOME", "CATEGORIA", "ACESSOS");
+        System.out.println("----------------------------------------------------------------------------");
 
         // 10 filmes
         while (!fila.isEmpty() && cont < 10) {
             NoSplay atual = fila.remove();
             cont++;
 
-            System.out.printf("%-5d | %-35s | %-15s | %d\n", 
+            System.out.printf("%-5d | %-35s | %-20s | %d\n", 
                               cont, 
                               atual.filme.getNome(), 
                               atual.filme.getCategoria(), 
@@ -172,7 +151,7 @@ public class ArvoreSplay {
             if (atual.esq != null) fila.add(atual.esq);
             if (atual.dir != null) fila.add(atual.dir);
         }
-        System.out.println("===============================================================");
+       System.out.println("============================================================================");
     }
 
     public void exibirPreferenciasCliente() {
