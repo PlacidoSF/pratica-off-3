@@ -2,6 +2,9 @@ package servidor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 import estruturas.listaLigada.*;
 import estruturas.hash.*;
@@ -12,16 +15,26 @@ public class Servidor {
     private ListaLigada dados;
     private TabelaHash<NoLista> index;
     private ArvoreSplay popularidadeGlobal;
+    private Map<String, Integer> dicionarioNomes;
 
     public Servidor() {
         this.dados = new ListaLigada();
         this.index = new TabelaHash<>(173);
         this.popularidadeGlobal = new ArvoreSplay();
+        this.dicionarioNomes = new HashMap<>();
     }
 
     public void cadastrarFilme(Filme filmeValor) {
         NoLista novoNo = this.dados.inserir(filmeValor);
         this.index.inserir(filmeValor.getId(), novoNo);
+
+        this.dicionarioNomes.put(filmeValor.getNome().toUpperCase(), filmeValor.getId());
+    }
+
+    public int buscarIdPorNome(String nome) {
+        Integer id = this.dicionarioNomes.get(nome.toUpperCase());
+        
+        return (id != null) ? id : -1; 
     }
 
     public Filme buscarComIndice(int id) {
@@ -75,5 +88,75 @@ public class Servidor {
             contador++;
         }
         return pagina;
+    }
+
+    public String recomendarPorGenero(String genero) {
+        List<Filme> filmesDoGenero = new ArrayList<>();
+        NoLista atual = this.dados.getList();
+
+        while (atual != null) {
+            Filme filme = atual.getValorFilme();
+            if (filme.getCategoria().equalsIgnoreCase(genero)) {
+                filmesDoGenero.add(filme);
+            }
+            atual = atual.getProxNo();
+        }
+
+        if (filmesDoGenero.isEmpty()) {
+            return "REC: VAZIO";
+        }
+
+        Random random = new Random();
+        StringBuilder recomendacao = new StringBuilder("REC:");
+        
+
+        int limite = 5;
+
+        for (int i = 0; i < limite; i++) {
+            int indexSorteado = random.nextInt(filmesDoGenero.size());
+            Filme sorteado = filmesDoGenero.remove(indexSorteado);
+
+
+            recomendacao.append(" ").append(sorteado.getId()).append(",")
+                        .append(sorteado.getNome()).append(",")
+                        .append(sorteado.getCategoria());
+
+            if (i < limite - 1) {
+                recomendacao.append(";");
+            }
+        }
+
+        return recomendacao.toString();
+    }
+
+    public String atenderMiss(int id) {
+
+        String generoGlobalAntigo = null;
+        if (this.popularidadeGlobal.getRaiz() != null) {
+            generoGlobalAntigo = this.popularidadeGlobal.getRaiz().getFilme().getCategoria();
+        }
+
+        Filme filmeEncontrado = buscarComIndice(id);
+        
+        if (filmeEncontrado == null) {
+            return "ERRO:FILME_NAO_ENCONTRADO";
+        }
+
+        if (generoGlobalAntigo == null) {
+            generoGlobalAntigo = filmeEncontrado.getCategoria();
+        }
+
+        String recomendacaoGlobal = recomendarPorGenero(generoGlobalAntigo);
+
+        String recomendacaoLocal = recomendarPorGenero(filmeEncontrado.getCategoria());
+
+        String dadosFilme = filmeEncontrado.getId() + ";" + 
+                            filmeEncontrado.getNome() + ";" + 
+                            filmeEncontrado.getAno() + ";" +
+                            filmeEncontrado.getSinopse() + ";" + 
+                            filmeEncontrado.getCategoria();
+
+        // filme | gêneroGlobal | recomendaçãoGlobal | recomendaçãoLocal
+        return dadosFilme + "|" + generoGlobalAntigo + "|" + recomendacaoGlobal + "|" + recomendacaoLocal;
     }
 }
