@@ -7,6 +7,7 @@ import java.util.Scanner;
 import util.LeitorCSV;
 import servidor.Servidor;
 import cliente.Cliente;
+import rede.ConexaoRede;
 import model.Filme;
 
 public class App {
@@ -14,16 +15,18 @@ public class App {
 
         LeitorCSV leitor = new LeitorCSV();
         List<Filme> catalogo = leitor.lerFilmes("resources/filmes.csv");
-        Servidor servidor = new Servidor();
+
+        ConexaoRede rede = new ConexaoRede();
+        Servidor servidor = new Servidor(rede);
     
         for (Filme filme : catalogo) {
-        servidor.cadastrarFilme(filme);
+            servidor.cadastrarFilme(filme);
         }
         
         List<Cliente> listaClientes = new ArrayList<>();
-        listaClientes.add(new Cliente("Gabriel", "senha123", servidor));
-        listaClientes.add(new Cliente("Henrique", "senha321", servidor));
-        listaClientes.add(new Cliente("Felipe", "senha456", servidor));
+        listaClientes.add(new Cliente("Gabriel", "senha123", servidor, rede));
+        listaClientes.add(new Cliente("Henrique", "senha321", servidor, rede));
+        listaClientes.add(new Cliente("Felipe", "senha456", servidor, rede));
         
         for (Cliente cliente : listaClientes) {
             for (int i = 0; i < Math.min(50, catalogo.size()); i++) {
@@ -57,7 +60,7 @@ public class App {
                 }
 
                 System.out.println("=========================================================================");
-                System.out.println("OPÇÕES: [P] Próxima | [V] Voltar | [T] Roteiro de Testes");
+                System.out.println("OPÇÕES: [P] Próxima | [V] Voltar | [T] Roteiro de Testes | [R] Relatório Huffman");
                 System.out.println("        [L] Fazer Logout  | [S] Sair do Sistema");
                 System.out.println("-------------------------------------------------------------------------");
                 System.out.println("BUSCA:  Digite o NOME exato do filme.");
@@ -109,6 +112,12 @@ public class App {
                         System.out.println("\nEncerrando o sistema global... Até logo!");
                         sessaoAtiva = false;
                         rodarSistema = false;
+                        break;
+                    
+                    case "R":
+                        limparTela();
+                        rede.exibirRelatorioCompressao();
+                        pausar(input);
                         break;
 
                     default:
