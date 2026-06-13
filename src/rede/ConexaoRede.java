@@ -57,8 +57,8 @@ public class ConexaoRede {
         
         for (NoHashMap<String, String> entry : tabelaAtual.obterEntradas()) {
             String chaveVisual = entry.getChave().equals("\n") ? "\\n" : entry.getChave();
-            System.out.print("['" + chaveVisual + "' -> " + entry.getValor() + "]  ");
+            System.out.print("['" + chaveVisual + "' -> " + entry.getValor() + "]  \n");
         }
-        System.out.println("\n===================================================\n");
+        System.out.println("===================================================\n");
     }
 }
