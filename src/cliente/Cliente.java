@@ -5,11 +5,15 @@ import estruturas.listaAutoajustavel.*;
 import estruturas.arvoreSplay.ArvoreSplay;
 import model.Filme;
 import servidor.Servidor;
+import rede.ConexaoRede;
+import rede.PacoteDados;
+import estruturas.huffman.ArvoreHuffman;
 
 public class Cliente {
     private String nomeUsuario;
     private String senha;
     private Servidor servidor;
+    private ConexaoRede rede;
     
     private TabelaHash<NoAutoAjustavel> cacheHash;
     private ListaAutoAjustavel cacheLRU;
@@ -18,11 +22,12 @@ public class Cliente {
     private static final int LIMITE_CACHE = 50;
     private int tamanhoAtual = 0;
 
-    public Cliente(String nomeUsuario, String senha, Servidor servidor) {
+    public Cliente(String nomeUsuario, String senha, Servidor servidor, ConexaoRede rede) {
         this.nomeUsuario = nomeUsuario;
         this.senha = senha;
         this.servidor = servidor;
-        
+        this.rede = rede;
+
         this.cacheHash = new TabelaHash<>(LIMITE_CACHE);
         this.cacheLRU = new ListaAutoAjustavel();
         this.preferencias = new ArvoreSplay();
@@ -55,7 +60,13 @@ public class Cliente {
             preferencias.inserir(filme);
 
             
-            String recomendacoesServidor = servidor.recomendarPorGenero(filme.getCategoria());
+            String pedidoRec = "REC:" + filme.getCategoria();
+            PacoteDados pacoteEnvio = rede.comprimirETransmitir(pedidoRec);
+            
+            PacoteDados pacoteResposta = servidor.receberRequisicao(pacoteEnvio);
+            
+            String recomendacoesServidor = ArvoreHuffman.decodificar(pacoteResposta.getBits(), pacoteResposta.getRaizDecodificacao());
+            
             filtrarEExibirRecomendacao(recomendacoesServidor, filme.getCategoria(), false);
 
         } else {
@@ -64,7 +75,13 @@ public class Cliente {
             System.out.println("[REDE] Preparando requisição ao servidor (Aguardando Huffman)...");
             System.out.println("---------------------------------------------------");
             
-            String resposta = servidor.atenderMiss(id);
+            String pedidoMiss = "MISS:" + id;
+            PacoteDados pacoteEnvio = rede.comprimirETransmitir(pedidoMiss);
+            
+            PacoteDados pacoteResposta = servidor.receberRequisicao(pacoteEnvio);
+            
+            String resposta = ArvoreHuffman.decodificar(pacoteResposta.getBits(), pacoteResposta.getRaizDecodificacao());
+            
             processarRespostaMiss(resposta);
 
         }
