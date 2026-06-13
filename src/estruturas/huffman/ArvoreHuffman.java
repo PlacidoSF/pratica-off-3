@@ -2,7 +2,7 @@ package estruturas.huffman;
 
 import estruturas.hashMap.*;
 import java.util.List; 
-import estruturas.MinHeap.MinHeap;
+import estruturas.minHeap.MinHeap;
 
 public class ArvoreHuffman {
 

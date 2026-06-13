@@ -1,4 +1,4 @@
-package estruturas.MinHeap;
+package estruturas.minHeap;
 import estruturas.huffman.NoHuffman;
 
 public class MinHeap {
