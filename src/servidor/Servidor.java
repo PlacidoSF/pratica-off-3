@@ -2,26 +2,30 @@ package servidor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 import estruturas.listaLigada.*;
 import estruturas.hash.*;
+import estruturas.hashMap.*;
 import estruturas.arvoreSplay.ArvoreSplay;
 import model.Filme;
+import rede.ConexaoRede;
+import rede.PacoteDados;
+import estruturas.huffman.ArvoreHuffman;
 
 public class Servidor {
     private ListaLigada dados;
     private TabelaHash<NoLista> index;
     private ArvoreSplay popularidadeGlobal;
-    private Map<String, Integer> dicionarioNomes;
+    private HashMap<String, Integer> dicionarioNomes;
+    private ConexaoRede rede;
 
-    public Servidor() {
+    public Servidor(ConexaoRede rede) {
         this.dados = new ListaLigada();
         this.index = new TabelaHash<>(173);
         this.popularidadeGlobal = new ArvoreSplay();
-        this.dicionarioNomes = new HashMap<>();
+        this.dicionarioNomes = new HashMap<>(173);
+        this.rede = rede;
     }
 
     public void cadastrarFilme(Filme filmeValor) {
@@ -158,5 +162,25 @@ public class Servidor {
 
         // filme | gêneroGlobal | recomendaçãoGlobal | recomendaçãoLocal
         return dadosFilme + "|" + generoGlobalAntigo + "|" + recomendacaoGlobal + "|" + recomendacaoLocal;
+    }
+
+    public PacoteDados receberRequisicao(PacoteDados pacoteEntrada) {
+
+        String requisicaoTexto = ArvoreHuffman.decodificar(pacoteEntrada.getBits(), pacoteEntrada.getRaizDecodificacao());
+        
+        String respostaBruta = "";
+
+        String[] partes = requisicaoTexto.split(":");
+        String comando = partes[0];
+        String parametro = partes[1];
+
+        if (comando.equals("MISS")) {
+            int id = Integer.parseInt(parametro);
+            respostaBruta = atenderMiss(id);
+        } else if (comando.equals("REC")) {
+            respostaBruta = recomendarPorGenero(parametro);
+        }
+
+        return rede.comprimirETransmitir(respostaBruta);
     }
 }
