@@ -58,8 +58,6 @@ public class Servidor {
         if (resultado != null) {
             Filme filmeEncontrado = resultado.getValorFilme();
             
-            this.popularidadeGlobal.inserir(filmeEncontrado);
-            
             return filmeEncontrado;
         }
         return null;
