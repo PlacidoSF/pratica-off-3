@@ -141,6 +141,7 @@ public class Servidor {
         }
 
         Filme filmeEncontrado = buscarComIndice(id);
+        Filme filmeEncontradoSemIndice = buscarSemIndice(id);
         
         if (filmeEncontrado == null) {
             return "ERRO:FILME_NAO_ENCONTRADO";

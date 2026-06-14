@@ -161,6 +161,10 @@ public class Cliente {
     public void processarRespostaMiss(String respostaServidor) {
         if (respostaServidor.equals("ERRO:FILME_NAO_ENCONTRADO")) {
             System.out.println("Erro: O filme solicitado não existe no catálogo.");
+            System.out.println("> ÍNDICE (Hash): " + servidor.getComparacoesIndex() + " comparações");
+            System.out.println("> DISCO (Lista): " + servidor.getComparacoesFisica() + " comparações");
+            System.out.println("---------------------------------------------------");
+            
             return;
         }
 
@@ -177,6 +181,10 @@ public class Cliente {
         );
 
         System.out.println("[SUCESSO] Filme recebido do servidor!");
+        System.out.println("> ÍNDICE (Hash): " + servidor.getComparacoesIndex() + " comparações");
+        System.out.println("> DISCO (Lista): " + servidor.getComparacoesFisica() + " comparações");
+        System.out.println("---------------------------------------------------");
+
         System.out.println(filme);
         
         atualizarCache(filme);
